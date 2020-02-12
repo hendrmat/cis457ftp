@@ -12,21 +12,52 @@ void error(char *msg)
 
 int main(int argc, char *argv[])
 {
-    int sockfd, portno, n;
+  int sockfd, portno, n, i, j, cnt;
 
     struct sockaddr_in serv_addr;
     struct hostent *server;
 
     char buffer[256];
-    if (argc < 3) {
-       fprintf(stderr,"usage %s hostname port\n", argv[0]);
-       exit(0);
+    char connection[256];
+    char args[3][50];
+
+    int needconnection = 1;
+    while(needconnection==1){
+      printf("Type CONNECT 'servername' 'serverport' to connect to a server.\n");
+      fgets(connection,255,stdin);
+      connection[strlen(connection) - 1] = '\0';
+
+      j=0;
+      cnt=0;
+      for(i=0;i<=strlen(connection);i++){
+	if(connection[i]==' '){
+	  args[cnt][j]='\0';
+	  cnt++;
+	  j=0;
+	}
+	else{
+	  args[cnt][j]=connection[i];
+	  j++;
+	}
+      }
+
+      if(strcmp(args[0],"CONNECT")==0 && cnt == 2)
+        needconnection=0;
+      else printf("Incorrect input\n");
+ 
     }
-    portno = atoi(argv[2]);
+    
+    
+    
+    //if (argc < 3) {
+    //fprintf(stderr,"usage %s hostname port\n", argv[0]);
+    //exit(0);
+    //}
+    portno = atoi(args[2]);
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) 
         error("ERROR opening socket");
-    server = gethostbyname(argv[1]);
+    server = gethostbyname(args[1]);
     if (server == NULL) {
         fprintf(stderr,"ERROR, no such host\n");
         exit(0);

@@ -4,6 +4,8 @@
    process for each connection
    gcc server2.c -lsocket
 */
+
+// Adding list functionality soon, establishing hendrick branch
 #include <stdio.h>
 #include <sys/types.h> 
 #include <sys/socket.h>

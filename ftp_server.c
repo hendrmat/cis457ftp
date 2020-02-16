@@ -24,6 +24,22 @@ void error(char *msg)
     exit(1);
 }
 
+void showlist(char* list)
+{
+    int num = 0;
+    char line[num];
+    FILE *list = fopen("list.txt","r");
+    if (list == NULL) {
+        printf("No files in this directory");
+    }
+    while(!eof(list) {
+        line[num] = fgets(dirname);
+        num++;
+    }
+    fclose(list);
+    send(sock, dirbuffer, 256, 0);
+}
+            
 int main(int argc, char *argv[])
 {
      int sockfd, newsockfd, portno, clilen, pid, status, run;

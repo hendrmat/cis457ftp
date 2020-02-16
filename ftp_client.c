@@ -7,8 +7,6 @@
 #include <string.h>
 #include <unistd.h>
 
-//establishing branch hendrick
-
 char args[3][50];
 int datacount = 0;
 
@@ -33,7 +31,17 @@ void parse(char* str){
 
 //This function will allow the user to view a list
 
-//void listing(char* list)
+void listing(char* list) 
+{
+    char dirname[256];
+    char dirbuffer[256];
+    list = malloc(size);
+    send(sock, dirbuffer, 256, 0);
+    recv(sock, list, size, 0);
+    dirname = open("list.txt");
+    write(dirname, list, size, 0);
+    
+}
 
 int main(int argc, char *argv[])
 {
@@ -44,6 +52,7 @@ int main(int argc, char *argv[])
 
     char buffer[256];
     char input[256];
+   // char *line;
 
     int run = 1;
     while (run) {
@@ -51,6 +60,7 @@ int main(int argc, char *argv[])
         while (needconnection) {
             printf("Type CONNECT 'servername' 'serverport' to connect" 
             " to a server.\n");
+           // line = malloc(strlen(input) + 1);
             fgets(input, 255, stdin);
             input[strlen(input) - 1] = '\0';
             parse(input);
@@ -78,6 +88,7 @@ int main(int argc, char *argv[])
                  else {
                      needconnection = 0;
                  }
+                // free(line);
             }
             else {
                  printf("Incorrect input\n");

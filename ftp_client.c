@@ -45,15 +45,19 @@ void listing(char* list)
 
 int main(int argc, char *argv[])
 {
-    int sockfd, portno, n;
+  int sockfd, portno, n;
 
     struct sockaddr_in serv_addr;
     struct hostent *server;
 
     char buffer[256];
     char input[256];
+<<<<<<< HEAD
    // char *line;
 
+=======
+  
+>>>>>>> fcf7042103557786227e0c0bb59190a6718d543b
     int run = 1;
     while (run) {
         int needconnection = 1;
@@ -77,7 +81,7 @@ int main(int argc, char *argv[])
                  }
                  bzero((char *) &serv_addr, sizeof(serv_addr));
                  serv_addr.sin_family = AF_INET;
-    		 bcopy((char *)server->h_addr, 
+    		         bcopy((char *)server->h_addr, 
                      (char *)&serv_addr.sin_addr.s_addr,server->h_length);
                  serv_addr.sin_port = htons(portno);
                  if (connect(sockfd,(struct sockaddr *)&serv_addr,
@@ -117,7 +121,7 @@ int main(int argc, char *argv[])
                  printf("Close Socket Connection.\n");
                  n = write(sockfd,"QUIT", strlen("QUIT"));
                  if (n < 0){ 
-		      perror("ERROR writing to socket");
+		                perror("ERROR writing to socket");
                  }
                  inconnection = 0;
                  close(sockfd);
@@ -128,4 +132,4 @@ int main(int argc, char *argv[])
          }
     }
     return 0;
-}
+}  

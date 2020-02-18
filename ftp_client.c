@@ -33,13 +33,14 @@ void parse(char* str){
 
 void listing(char* list) 
 {
+    int size;
+    int sock;
     char dirname[256];
     char dirbuffer[256];
-    list = malloc(size);
     send(sock, dirbuffer, 256, 0);
     recv(sock, list, size, 0);
-    dirname = open("list.txt");
-    write(dirname, list, size, 0);
+    dirname = popen("list.txt", "-w");
+    write(sock, list, size);
     
 }
 
@@ -113,7 +114,7 @@ int main(int argc, char *argv[])
                  printf("Send file to server to store.\n");
                  fPoint = fopen(args[1], "r"); //open text file
                  if (fPoint = NULL) {
-                     printf("Error opening file.\n")
+                     printf("Error opening file.\n");
                  }
                  else {
                      //signal server for operation

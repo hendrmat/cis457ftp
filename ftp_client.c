@@ -104,13 +104,13 @@ int main(int argc, char *argv[])
             input[strlen(input) - 1] = '\0';
             parse(input);
 
-            if(strcmp(args[0],"LIST") == 0 && datacount == 1) {
+            if(strcmp(args[1],"LIST") == 0 && datacount == 1) {
                  printf("List files in current directory of server\n");
             }
-            else if(strcmp(args[0],"RETRIEVE") == 0 && datacount == 2) {
+            else if(strcmp(args[1],"RETRIEVE") == 0 && datacount == 2) {
                  printf("Get file from server\n");
             }
-            else if(strcmp(args[0],"STORE") == 0 && datacount == 2) {
+            else if(strcmp(args[1],"STORE") == 0 && datacount == 2) {
                  printf("Send file to server to store.\n");
                  fPoint = fopen(args[1], "r"); //open text file
                  if (fPoint = NULL) {
@@ -127,7 +127,7 @@ int main(int argc, char *argv[])
                  }
                  fclose(fPoint);
             }
-            else if(strcmp(args[0],"QUIT") == 0 && datacount == 1) {
+            else if(strcmp(args[1],"QUIT") == 0 && datacount == 1) {
                  printf("Close Socket Connection.\n");
                  n = write(sockfd,"QUIT", strlen("QUIT"));
                  if (n < 0){ 

@@ -18,6 +18,7 @@
 #include <sys/wait.h>
 
 void dostuff(int); /* function prototype */
+void fSend(int);
 void error(char *msg)
 {
     perror(msg);
@@ -100,4 +101,25 @@ void dostuff (int sock)
    printf("Here is the message: %s\n",buffer);
    n = write(sock,"I got your message",18);
    if (n < 0) error("ERROR writing to socket");
+}
+
+void fSend (int sock)
+{
+   char fName[256];
+   char fBuff[256];
+   FILE *fPoint;
+   read(sock, fName, 256);
+   if (fPoint == NULL)
+   {
+      printf("Error opening file.\n");
+   }
+   else
+   {
+      while(read(sock, fBuff, 256) > 0)
+      {
+         fprintf(fPoint, "%s", fBuff);
+      }
+      printf("File received.");
+   }
+   fclose (fPoint);
 }

@@ -52,19 +52,15 @@ int main(int argc, char *argv[])
 
     char buffer[256];
     char input[256];
-<<<<<<< HEAD
-   // char *line;
+    char fBuff[256];//file contents
+    FILE *fPoint; //file pointer
 
-=======
-  
->>>>>>> fcf7042103557786227e0c0bb59190a6718d543b
     int run = 1;
     while (run) {
         int needconnection = 1;
         while (needconnection) {
             printf("Type CONNECT 'servername' 'serverport' to connect" 
             " to a server.\n");
-           // line = malloc(strlen(input) + 1);
             fgets(input, 255, stdin);
             input[strlen(input) - 1] = '\0';
             parse(input);
@@ -81,7 +77,7 @@ int main(int argc, char *argv[])
                  }
                  bzero((char *) &serv_addr, sizeof(serv_addr));
                  serv_addr.sin_family = AF_INET;
-    		         bcopy((char *)server->h_addr, 
+    		 bcopy((char *)server->h_addr, 
                      (char *)&serv_addr.sin_addr.s_addr,server->h_length);
                  serv_addr.sin_port = htons(portno);
                  if (connect(sockfd,(struct sockaddr *)&serv_addr,
@@ -92,7 +88,6 @@ int main(int argc, char *argv[])
                  else {
                      needconnection = 0;
                  }
-                // free(line);
             }
             else {
                  printf("Incorrect input\n");
@@ -115,7 +110,21 @@ int main(int argc, char *argv[])
                  printf("Get file from server\n");
             }
             else if(strcmp(args[0],"STORE") == 0 && datacount == 2) {
-                 printf("send file to server to store.\n");
+                 printf("Send file to server to store.\n");
+                 fPoint = fopen(args[1], "r"); //open text file
+                 if (fPoint = NULL) {
+                     printf("Error opening file.\n")
+                 }
+                 else {
+                     //signal server for operation
+                     write(sockfd, "COM:STORE", 9);
+                     write(sockfd, args[1], sizeof(args[1]));
+                     while(fgets(fBuff, 256, fPoint) != NULL) {
+                         write(sockfd, fBuff, sizeof(fBuff));
+                     }
+                     printf("File Sent.\n");
+                 }
+                 fclose(fPoint);
             }
             else if(strcmp(args[0],"QUIT") == 0 && datacount == 1) {
                  printf("Close Socket Connection.\n");

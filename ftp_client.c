@@ -56,12 +56,12 @@ int main(int argc, char *argv[])
             parse(input);
             
             if(strcmp(args[0],"CONNECT") == 0 && datacount == 3) {
-                 portno = atoi(argv[2]);
+                 portno = atoi(args[2]);
                  sockfd = socket(AF_INET, SOCK_STREAM, 0);
                  if (sockfd < 0){ 
                      perror("ERROR opening socket");
                  }
-                 server = gethostbyname(argv[1]);
+                 server = gethostbyname(args[1]);
                  if (server == NULL) {
                      fprintf(stderr,"ERROR, no such host\n");
                  }
@@ -92,7 +92,8 @@ int main(int argc, char *argv[])
             fgets(input, 255, stdin);
             input[strlen(input) - 1] = '\0';
             parse(input);
-
+	
+  	    printf("datacount:%d\targ0=%s;",datacount,args[0]);
             if(strcmp(args[0],"LIST") == 0 && datacount == 1) {
                  printf("List files in current directory of server\n");
             }

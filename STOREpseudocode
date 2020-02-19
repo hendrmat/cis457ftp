@@ -1,0 +1,44 @@
+//client
+	char fNameIn[256]; //file name
+	char fBuff[256]; //file contents
+	FILE *fPoint; //file pointer
+	printf("Input name of file to store: ");
+	fgets(fNameIn,256,stdin);
+	fPoint=fopen(args[1], "r"); //open text file fNameIn
+	if (fPoint == NULL)
+	{
+		printf("Error opening file.\n");
+	}
+	else
+	{
+		//signal server for operation
+		write(sock, "COM:STORE", 9);
+		write(sockfd, fNameIn, sizeof(fNameIn));//send file name to server
+		while (fgets(fBuff,256,fPoint) != NULL) //read text from file into fBuff until EOF
+		{
+			write(sockfd, fBuff, sizeof(fBuff)); //send file data to server
+		}
+		fclose (fPoint);//close text file
+		printf("File Sent.\n");
+	}
+
+//server
+	char fName[256]; //file name
+	char fBuff[256]; //file contents
+	FILE *fPoint;//file pointer
+	if((buffer,"COM:STORE")==0)
+	{
+		read(sock, fName, 256);
+		fPoint = fopen(fName,"w");//store file contents in program directory
+		if (fPoint == NULL)
+		{
+			printf("Error opening file.\n");
+		}
+		else
+		{
+			while(read(sock,fBuff,256)>0)
+			{
+				fprintf(fPoint, "%s",fBuff);
+			}
+		}
+	}

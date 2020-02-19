@@ -17,7 +17,7 @@ void parse(char* str){
     int i = 0;
     datacount = 0;
 
-    for(i = 0; i < strlen(str); i++) {
+    for(i = 0; i <= strlen(str); i++) {
         if (str[i] == ' ') {
             args[datacount][j] = '\0';
             datacount++;

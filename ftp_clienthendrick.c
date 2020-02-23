@@ -29,20 +29,6 @@ void parse(char* str){
         datacount++;
 }
 
-//This function will allow the user to view a list
-
-void listing(char* list) 
-{
-    int size;
-    int sock;
-    char dirname[256];
-    char dirbuffer[256];
-    send(sock, dirbuffer, 256, 0);
-    recv(sock, list, size, 0);
-    dirname = popen("list.txt", "-w");
-    write(sock, list, size);
-    
-}
 
 int main(int argc, char *argv[])
 {
@@ -106,6 +92,16 @@ int main(int argc, char *argv[])
 
             if(strcmp(args[1],"LIST") == 0 && datacount == 1) {
                  printf("List files in current directory of server\n");
+		 n = write(sockfd,"LIST",strlen("LIST"));
+    		 if (n < 0) {
+                     perror("ERROR writing to socket");
+		 }	 
+		 bzero(buffer,256);
+		 n = read(sockfd,buffer,1000);
+		 if (n < 0) {
+		     perror("ERROR reading from socket");
+		 }	 
+		 printf("%s\n",buffer);
             }
             else if(strcmp(args[1],"RETRIEVE") == 0 && datacount == 2) {
                  printf("Get file from server\n");
@@ -131,7 +127,7 @@ int main(int argc, char *argv[])
                  printf("Close Socket Connection.\n");
                  n = write(sockfd,"QUIT", strlen("QUIT"));
                  if (n < 0){ 
-		                perror("ERROR writing to socket");
+		     perror("ERROR writing to socket");
                  }
                  inconnection = 0;
                  close(sockfd);

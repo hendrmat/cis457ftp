@@ -25,7 +25,7 @@ void error(char *msg)
     exit(1);
 }
 
-void showlist(char* list)
+/*void showlist(char* list)
 {
     char dirname[256];
     char dirbuffer[256]; 
@@ -43,6 +43,7 @@ void showlist(char* list)
     fclose(filelist);
     send(socket, dirbuffer, 256, 0);
 }
+*/
             
 int main(int argc, char *argv[])
 {
@@ -125,4 +126,22 @@ void fSend (int sock)
       printf("File received.");
    }
    fclose (fPoint);
+}
+
+void list(int sock){
+   char files[1000];
+   int n;
+   DIR *d;
+   struct dirent *dir;
+   d = opendir(".");
+   if(d){
+	    while((dir = readdir(d)) != NULL){
+		    strcat(files,dir->d_name);
+		    strcat(files,"\n");
+	    }
+	closedir(d);
+   }
+   
+   n = write(sock,files,strlen(files));
+   if (n < 0) error("ERROR writing to socket");
 }

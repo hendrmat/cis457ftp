@@ -7,6 +7,8 @@
 #include <string.h>
 #include <unistd.h>
 
+void fStore(int,char *);
+
 char args[3][50];
 int datacount=0;
 
@@ -99,6 +101,11 @@ int main(int argc, char *argv[])
 	}
 	else if(strcmp(args[0],"RETRIEVE")==0 && datacount== 2){
 		printf("Get file from server\n");
+		write(sockfd, "RETR",4);
+		bzero(cBuff,256);
+		read(sockfd,cBuff,255);
+		write(sockfd, args[1], sizeof(args[1]));//send file name to server
+		fStore(sockfd,args[1]);
 	}
 	else if(strcmp(args[0],"STORE")==0 && datacount== 2){
 		printf("Send file to server to store.\n");
@@ -173,3 +180,41 @@ int main(int argc, char *argv[])
     
     return 0;
 }
+
+void fStore (int sock, char* fName)
+{
+	printf("STORE FUNCTION accessed. FIlename %s\n",fName);
+	char rBuff[256];//receive buffer
+	FILE *fPoint;//file pointer
+	long int fSize = 0; //size of file
+	long int count = 0;//count bytes of file delivered
+
+	fPoint = fopen(fName, "wb");//open file with name
+	if (fPoint == NULL)
+	{
+		printf("Error opening file.\n");
+		write(sock, "Server file error",17);//file open error
+	}
+	else
+	{
+	    bzero(rBuff,256);
+	    read(sock, rBuff, 255);//read file length
+	    //printf("RCV 2\n");
+	    write(sock, "File length received",20);//file length ack
+        fSize = atol(rBuff);
+        //write through file until length of file completed.
+		//printf("Write");
+		while(count<fSize)
+		{
+		    bzero(rBuff,256);
+		    read(sock,rBuff,255);
+		    count+=strlen(rBuff);
+			fprintf(fPoint, "%s", rBuff);
+			//printf("Test\n");
+		}
+		printf("File received.\n");
+		//printf("%d\n",count);
+	}
+	fclose (fPoint);//close file
+}
+

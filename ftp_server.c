@@ -18,6 +18,7 @@
 void dostuff(int); /* function prototype */
 void list(int);
 void fSend(int);
+void fStore(int);
 void error(char *msg)
 {
     perror(msg);
@@ -97,9 +98,13 @@ void dostuff (int sock)
    printf("BUFFER:%s.\n",buffer);
    if(strcmp(buffer,"LIST")==0)
 	list(sock);
+    if (strcmp(buffer,"RETR")==0) {
+        write(sock, "RETR received",13);
+        fSend(sock);
+   }
    if (strcmp(buffer,"STORE")==0) {
         write(sock, "STORE received",14);
-        fSend(sock);
+        fStore(sock);
    }
 
    if(strcmp(buffer,"QUIT")==0){
@@ -133,6 +138,43 @@ void list(int sock){
 }
 
 void fSend (int sock)
+{
+	char cBuff[256];//communication buffer
+	FILE *fPoint; //file pointer
+	char fName[256];//file name
+	unsigned long fSize=0;//file size
+
+	bzero(fName,256);
+	read(sock, fName, 255);//read file name
+
+	fPoint = fopen(fName,"rb");//open text file
+	if (fPoint == NULL)
+	{
+		printf("Error opening file.\n");
+	}
+	else
+	{
+		//send size of file
+               fseek(fPoint,0, SEEK_END);
+               fSize = ftell(fPoint);//get curent file pointer
+               fseek(fPoint, 0, SEEK_SET);
+               //printf("%d\n",fSize);
+               sprintf(cBuff,"%ld",fSize);
+               write(sock, cBuff, strlen(cBuff));//send size of file
+               bzero(cBuff,256);
+               read(sock,cBuff,255);//get ack
+               //printf("RCV 3\n");
+               while(fgets(cBuff,255,fPoint) != NULL)
+               {
+                   write(sock, cBuff, strlen(cBuff));//send file data
+               }
+               printf("File Sent.\n");
+
+           fclose(fPoint);//close file
+	}
+}
+
+void fStore (int sock)
 {
 	char fName[256];//file name
 	char rBuff[256];//receive buffer

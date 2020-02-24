@@ -101,7 +101,7 @@ void dostuff (int sock)
       
    bzero(buffer,256);
    n = read(sock,buffer,255);
-   if (strcmp(buffer, "STORE" == 0)
+   if (strcmp(buffer, "STORE" = 0))
    {
        write(sock, "STORE received", 14);
        fSend(sock);
@@ -115,6 +115,7 @@ void fSend (int sock)
 {
    char fName[256];
    char fBuff[256];
+   char rBuff[256];
    FILE *fPoint;
    long int fSize = 0;
    long int count = 0;
@@ -152,12 +153,14 @@ void list(int sock){
    DIR *d;
    struct dirent *dir;
    d = opendir(".");
-   if(d){
-	    while((dir = readdir(d)) != NULL){
-		    strcat(files,dir->d_name);
-		    strcat(files,"\n");
-	    }
-	closedir(d);
+   if(d)
+   {
+       while((dir = readdir(d)) != NULL)
+       {
+	   strcat(files,dir->d_name);
+	   strcat(files,"\n");
+       }
+       close(d);
    }
    
    n = write(sock,files,strlen(files));

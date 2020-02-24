@@ -40,6 +40,7 @@ int main(int argc, char *argv[])
     char buffer[256];
     char input[256];
     char fBuff[256];//file contents
+    char cBuff[256];
     FILE *fPoint; //file pointer
     unsigned long fSize = 0; //file size
 
@@ -110,7 +111,7 @@ int main(int argc, char *argv[])
             else if(strcmp(args[1],"STORE") == 0 && datacount == 2) {
                  printf("Send file to server to store.\n");
                  fPoint = fopen(args[1], "r"); //open text file
-                 if (fPoint = NULL) {
+                 if (fPoint == NULL) {
                      printf("Error opening file.\n");
                  }
                  else {
@@ -129,7 +130,7 @@ int main(int argc, char *argv[])
 	             fseek(fPoint, 0, SEEK_END);
 		     fSize = ftell(fPoint); //get current file pointer
 		     fseek(fPoint, 0, SEEK_SET);
-		     sprintf(cBuff, "%d", fSize);
+		     sprintf(cBuff, "%ld", fSize);
 		     write(sockfd, cBuff, strlen(cBuff));//send size of file
 		     bzero(cBuff, 256);
 	             read(sockfd, cBuff, 255); //get ack

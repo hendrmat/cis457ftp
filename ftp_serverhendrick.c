@@ -101,10 +101,14 @@ void dostuff (int sock)
       
    bzero(buffer,256);
    n = read(sock,buffer,255);
-   if (n < 0) error("ERROR reading from socket");
-   printf("Here is the message: %s\n",buffer);
-   n = write(sock,"I got your message",18);
-   if (n < 0) error("ERROR writing to socket");
+   if (strcmp(buffer, "STORE" == 0)
+   {
+       write(sock, "STORE received", 14);
+       fSend(sock);
+   }
+   //printf("Here is the message: %s\n",buffer);
+   //n = write(sock,"I got your message",18);
+   //if (n < 0) error("ERROR writing to socket");
 }
 
 void fSend (int sock)
@@ -112,18 +116,32 @@ void fSend (int sock)
    char fName[256];
    char fBuff[256];
    FILE *fPoint;
+   long int fSize = 0;
+   long int count = 0;
+	
+   bzero(fName, 256);
    read(sock, fName, 256);
+   fPoint = fopen(fName, "wb");
    if (fPoint == NULL)
    {
-      printf("Error opening file.\n");
+      printf("Error opening file.\n"); 
+      write(sock, "Server file error", 17);
    }
    else
    {
-      while(read(sock, fBuff, 256) > 0)
+      write(sock, "Name received", 13);
+      bzero(rBuff, 256);
+      read(sock, rBuff, 255);
+      write(sock, "File length received", 20); //file length ack
+      fSize = atol(rBuff);
+      while(count < fSize)
       {
-         fprintf(fPoint, "%s", fBuff);
+	  bzero(rBuff, 256);
+	  read(sock, rBuff, 255);
+	  count += strlen(rBuff);
+	  fprintf(fPoint, "%s", rBuff);
       }
-      printf("File received.");
+      printf("File received.\n");
    }
    fclose (fPoint);
 }

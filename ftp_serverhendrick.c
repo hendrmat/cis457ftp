@@ -29,7 +29,7 @@ void error(char *msg)
             
 int main(int argc, char *argv[])
 {
-     int sockfd, newsockfd, portno, clilen, pid, status, run;
+     int sockfd, newsockfd, portno, clilen, pid, status, run, clientcon;
      struct sockaddr_in serv_addr, cli_addr;
   
      sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -46,23 +46,33 @@ int main(int argc, char *argv[])
      }
      listen(sockfd,5);
      clilen = sizeof(cli_addr);
+     run = 1;
+     clientcon = 0;
      while (run) {
-         newsockfd = accept(sockfd, 
-               (struct sockaddr *) &cli_addr, &clilen);
-         if (newsockfd < 0) { 
-             error("ERROR on accept");
+         if(!clientcon)
+	 {
+             newsockfd = accept(sockfd, 
+             (struct sockaddr *) &cli_addr, &clilen);
+             if (newsockfd < 0) { 
+                 error("ERROR on accept");
+             }
+             else
+             {
+                 clientcon = 1;
+             }
          }
          pid = fork();
          if (pid < 0){
              error("ERROR on fork");
          }
          if (pid == 0)  {
-             //close(sockfd);
+             close(sockfd);
              dostuff(newsockfd);
              exit(0);
          }
          else {
              wait (&status);
+             clientcon = status;
              //close(newsockfd);
              //run = 0;
          }
@@ -87,11 +97,25 @@ void dostuff (int sock)
        error("ERROR reading from socket");
    }
    printf("BUFFER:%s.\n", buffer);
+   
+   if (strcmp(buffer, "LIST") == 0) 
+   {
+       list(sock);
+   }
+   
    if (strcmp(buffer, "STORE") == 0)
    {
        write(sock, "STORE received", 14);
        fSend(sock);
    }
+   
+   if (strcmp(buffer, "QUIT") == 0)
+   {
+       close(sock);
+       //clientcon = 0;
+       exit(0);
+   }
+
    //printf("Here is the message: %s\n",buffer);
    //n = write(sock,"I got your message",18);
 }

@@ -53,13 +53,13 @@ int main(int argc, char *argv[])
             input[strlen(input) - 1] = '\0';
             parse(input);
             
-            if(strcmp(args[0],"CONNECT") == 0 && datacount == 3) {
-                 portno = atoi(argv[2]);
+            if(strcasecmp(args[0],"CONNECT") == 0 && datacount == 3) {
+                 portno = atoi(args[2]);
                  sockfd = socket(AF_INET, SOCK_STREAM, 0);
                  if (sockfd < 0){ 
                      perror("ERROR opening socket");
                  }
-                 server = gethostbyname(argv[1]);
+                 server = gethostbyname(args[1]);
                  if (server == NULL) {
                      fprintf(stderr,"ERROR, no such host\n");
                  }
@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
             input[strlen(input) - 1] = '\0';
             parse(input);
 
-            if(strcmp(args[1],"LIST") == 0 && datacount == 1) {
+            if(strcasecmp(args[0],"LIST") == 0 && datacount == 1) {
                  printf("List files in current directory of server\n");
 		 n = write(sockfd,"LIST",strlen("LIST"));
     		 if (n < 0) {
@@ -104,12 +104,12 @@ int main(int argc, char *argv[])
 		 }	 
 		 printf("%s\n",buffer);
             }
-            else if(strcmp(args[1],"RETRIEVE") == 0 && datacount == 2) {
+            else if(strcasecmp(args[1],"RETRIEVE") == 0 && datacount == 2) {
                  printf("Get file from server\n");
             }
-            else if(strcmp(args[1],"STORE") == 0 && datacount == 2) {
+            else if(strcasecmp(args[1],"STORE") == 0 && datacount == 2) {
                  printf("Send file to server to store.\n");
-                 fPoint = fopen(args[1], "r"); //open text file
+                 fPoint = fopen(args[1], "rb"); //open text file
                  if (fPoint == NULL) {
                      printf("Error opening file.\n");
                  }
@@ -123,7 +123,7 @@ int main(int argc, char *argv[])
 		     bzero(cBuff, 256);
 	             read(sockfd, cBuff, 255);
 		 }
-		 if (strcmp(cBuff, "Name Received") == 0) 
+		 if (strcasecmp(cBuff, "Name Received") == 0) 
 		 {
 		     //send size of file
 	             fseek(fPoint, 0, SEEK_END);
@@ -133,18 +133,20 @@ int main(int argc, char *argv[])
 		     write(sockfd, cBuff, strlen(cBuff));//send size of file
 		     bzero(cBuff, 256);
 	             read(sockfd, cBuff, 255); //get ack
-                     while(fgets(cBuff, 256, fPoint) != NULL) {
+                     while(fgets(cBuff, 256, fPoint) != NULL) 
+	             {
                          write(sockfd, cBuff, sizeof(cBuff));
                      }
                      printf("File Sent.\n");
                  }
 		 else
 		 {
-	             printf("Operation cancelled. Server-side file error detected.\n");
+	             printf("Operation cancelled. Server-side file error "
+			"detected.\n");
 		 }
                  fclose(fPoint);//close file
             }
-            else if(strcmp(args[1],"QUIT") == 0 && datacount == 1) {
+            else if(strcasecmp(args[1],"QUIT") == 0 && datacount == 1) {
                  printf("Close Socket Connection.\n");
                  n = write(sockfd,"QUIT", strlen("QUIT"));
                  if (n < 0){ 

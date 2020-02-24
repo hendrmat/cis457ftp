@@ -39,6 +39,9 @@ int main(int argc, char *argv[])
 
     char buffer[256];
     char input[256];
+    char cBuff[256];//communication buffer
+    FILE *fPoint; //file pointer
+    unsigned long fSize=0;//file size
 
 
     int run = 1;
@@ -99,7 +102,48 @@ int main(int argc, char *argv[])
 	}
 	else if(strcmp(args[0],"STORE")==0 && datacount== 2){
 		printf("Send file to server to store.\n");
+fPoint = fopen(args[1],"rb");//open text file
+		if (fPoint == NULL)
+		{
+			printf("Error opening file.\n");
+		}
+		else
+		{
+			//signal server for operation
+			write(sockfd, "STORE",5);
+			bzero(cBuff,256);
+			read(sockfd,cBuff,255);
+			//printf("RCV 1\n");
+			write(sockfd, args[1], sizeof(args[1]));//send file name to server
 
+			//check file name received/opened
+			bzero(cBuff,256);
+			read(sockfd,cBuff,255);
+			//printf("RCV 2\n");
+            if(strcmp(cBuff,"Name received")==0)
+            {
+                //send size of file
+                fseek(fPoint,0, SEEK_END);
+                fSize = ftell(fPoint);//get curent file pointer
+                fseek(fPoint, 0, SEEK_SET);
+                //printf("%d\n",fSize);
+                sprintf(cBuff,"%ld",fSize);
+                write(sockfd, cBuff, strlen(cBuff));//send size of file
+                bzero(cBuff,256);
+                read(sockfd,cBuff,255);//get ack
+                //printf("RCV 3\n");
+                while(fgets(cBuff,255,fPoint) != NULL)
+                {
+                    write(sockfd, cBuff, strlen(cBuff));//send file data
+                }
+                printf("File Sent.\n");
+            }
+            else
+            {
+                printf("Operation cancelled. Server-side file error detected.\n");
+            }
+            fclose(fPoint);//close file
+		}
 	}
 	else if(strcmp(args[0],"QUIT")==0 && datacount== 1){
 		printf("Close Socket Connection.\n");

@@ -17,15 +17,18 @@
 
 void dostuff(int); /* function prototype */
 void list(int);
+void fSend(int);
 void error(char *msg)
 {
     perror(msg);
     exit(1);
 }
 
+int run=1;
+
 int main(int argc, char *argv[])
 {
-     int sockfd, newsockfd, portno, clilen, pid,run,status;
+     int sockfd, newsockfd, portno, clilen, pid,status;
      struct sockaddr_in serv_addr, cli_addr;
 
      //if (argc < 2) {
@@ -45,7 +48,7 @@ int main(int argc, char *argv[])
               error("ERROR on binding");
      listen(sockfd,5);
      clilen = sizeof(cli_addr);
-     run=1;
+ 
      while (run) {
          newsockfd = accept(sockfd, 
                (struct sockaddr *) &cli_addr, &clilen);
@@ -55,7 +58,7 @@ int main(int argc, char *argv[])
          if (pid < 0)
              error("ERROR on fork");
          if (pid == 0)  {
-             close(sockfd);
+             //close(sockfd);
              dostuff(newsockfd);
              exit(0);
          }
@@ -63,6 +66,7 @@ int main(int argc, char *argv[])
 		wait (&status);
 		//close(newsockfd);
 	 	//run=0;
+		printf("IN ELSE\n");
 	 }
      } /* end of while */
      return 0; /* we never get here */
@@ -82,12 +86,20 @@ void dostuff (int sock)
    n = read(sock,buffer,255);
    if (n < 0) error("ERROR reading from socket");
 
-   printf("RECEIVED: %s.",buffer);
+   printf("BUFFER:%s.\n",buffer);
    if(strcmp(buffer,"LIST")==0)
 	list(sock);
-   printf("Here is the message: %s\n",buffer);
-   n = write(sock,"I got your message",18);
-   if (n < 0) error("ERROR writing to socket");
+   if (strcmp(buffer,"STORE")==0) {
+        write(sock, "STORE received",14);
+        fSend(sock);
+   }
+
+   if(strcmp(buffer,"QUIT")==0)
+	run = 0;
+
+   //printf("Here is the message: %s\n",buffer);
+   //n = write(sock,"I got your message",18);
+   //if (n < 0) error("ERROR writing to socket");
 }
 
 void list(int sock){
@@ -106,4 +118,45 @@ void list(int sock){
    
    n = write(sock,files,strlen(files));
    if (n < 0) error("ERROR writing to socket");
+}
+
+void fSend (int sock)
+{
+	char fName[256];//file name
+	char rBuff[256];//receive buffer
+	FILE *fPoint;//file pointer
+	long int fSize = 0; //size of file
+	long int count = 0;//count bytes of file delivered
+
+	bzero(fName,256);
+	read(sock, fName, 255);//read file name
+	//printf("RCV 1\n");
+	fPoint = fopen(fName, "wb");//open file with name
+	if (fPoint == NULL)
+	{
+		printf("Error opening file.\n");
+		write(sock, "Server file error",17);//file open error
+	}
+	else
+	{
+        write(sock, "Name received",13);//file name read/open ack
+	    bzero(rBuff,256);
+	    read(sock, rBuff, 255);//read file length
+	    //printf("RCV 2\n");
+	    write(sock, "File length received",20);//file length ack
+        fSize = atol(rBuff);
+        //write through file until length of file completed.
+		//printf("Write");
+		while(count<fSize)
+		{
+		    bzero(rBuff,256);
+		    read(sock,rBuff,255);
+		    count+=strlen(rBuff);
+			fprintf(fPoint, "%s", rBuff);
+			//printf("Test\n");
+		}
+		printf("File received.\n");
+		//printf("%d\n",count);
+	}
+	fclose (fPoint);//close file
 }

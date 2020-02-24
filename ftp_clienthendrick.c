@@ -41,6 +41,7 @@ int main(int argc, char *argv[])
     char input[256];
     char fBuff[256];//file contents
     FILE *fPoint; //file pointer
+    unsigned long fSize = 0; //file size
 
     int run = 1;
     while (run) {
@@ -114,14 +115,34 @@ int main(int argc, char *argv[])
                  }
                  else {
                      //signal server for operation
-                     write(sockfd, "COM:STORE", 9);
+                     write(sockfd, "STORE", 5);
+	             bzero(cBuff, 256);
+		     read(sockfd, cBuff, 255);
                      write(sockfd, args[1], sizeof(args[1]));
+		     //check file name received/opened
+		     bzero(cBuff, 256);
+	             read(sockfd, cBuff, 255);
+		 }
+		 if (strcmp(cBuff, "Name Received") == 0) 
+		 {
+		     //send size of file
+	             fseek(fPoint, 0, SEEK_END);
+		     fSize = ftell(fPoint); //get current file pointer
+		     fseek(fPoint, 0, SEEK_SET);
+		     sprintf(cBuff, "%d", fSize);
+		     write(sockfd, cBuff, strlen(cBuff));//send size of file
+		     bzero(cBuff, 256);
+	             read(sockfd, cBuff, 255); //get ack
                      while(fgets(fBuff, 256, fPoint) != NULL) {
                          write(sockfd, fBuff, sizeof(fBuff));
                      }
                      printf("File Sent.\n");
                  }
-                 fclose(fPoint);
+		 else
+		 {
+	             printf("Operation cancelled. Server-side file error detected.\n");
+		 }
+                 fclose(fPoint);//close file
             }
             else if(strcmp(args[1],"QUIT") == 0 && datacount == 1) {
                  printf("Close Socket Connection.\n");

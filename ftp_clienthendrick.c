@@ -39,7 +39,6 @@ int main(int argc, char *argv[])
 
     char buffer[256];
     char input[256];
-    char fBuff[256];//file contents
     char cBuff[256];
     FILE *fPoint; //file pointer
     unsigned long fSize = 0; //file size
@@ -134,8 +133,8 @@ int main(int argc, char *argv[])
 		     write(sockfd, cBuff, strlen(cBuff));//send size of file
 		     bzero(cBuff, 256);
 	             read(sockfd, cBuff, 255); //get ack
-                     while(fgets(fBuff, 256, fPoint) != NULL) {
-                         write(sockfd, fBuff, sizeof(fBuff));
+                     while(fgets(cBuff, 256, fPoint) != NULL) {
+                         write(sockfd, cBuff, sizeof(cBuff));
                      }
                      printf("File Sent.\n");
                  }

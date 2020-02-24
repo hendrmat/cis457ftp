@@ -16,34 +16,16 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/wait.h>
+#include <dirent.h>
 
 void dostuff(int); /* function prototype */
+void list(int);
 void fSend(int);
 void error(char *msg)
 {
     perror(msg);
     exit(1);
 }
-
-/*void showlist(char* list)
-{
-    char dirname[256];
-    char dirbuffer[256]; 
-    int num = 0;
-    int socket;
-    char *line[num];
-    FILE *filelist = fopen("list.txt","r");
-    if (filelist == NULL) {
-        printf("No files in this directory");
-    }
-    while(!feof(filelist)) {
-        line[num] = fgets(dirname, 255, filelist);
-        num++;
-    }
-    fclose(filelist);
-    send(socket, dirbuffer, 256, 0);
-}
-*/
             
 int main(int argc, char *argv[])
 {
@@ -64,7 +46,6 @@ int main(int argc, char *argv[])
      }
      listen(sockfd,5);
      clilen = sizeof(cli_addr);
-     run = 1;
      while (run) {
          newsockfd = accept(sockfd, 
                (struct sockaddr *) &cli_addr, &clilen);
@@ -76,14 +57,14 @@ int main(int argc, char *argv[])
              error("ERROR on fork");
          }
          if (pid == 0)  {
-             close(sockfd);
+             //close(sockfd);
              dostuff(newsockfd);
              exit(0);
          }
          else {
              wait (&status);
-             close(newsockfd);
-             run = 0;
+             //close(newsockfd);
+             //run = 0;
          }
      } /* end of while */
      return 0; /* we never get here */
@@ -101,20 +82,23 @@ void dostuff (int sock)
       
    bzero(buffer,256);
    n = read(sock,buffer,255);
-   if (strcmp(buffer, "STORE" = 0))
+   if (n < 0) 
+   {
+       error("ERROR reading from socket");
+   }
+   printf("BUFFER:%s.\n", buffer);
+   if (strcmp(buffer, "STORE") == 0)
    {
        write(sock, "STORE received", 14);
        fSend(sock);
    }
    //printf("Here is the message: %s\n",buffer);
    //n = write(sock,"I got your message",18);
-   //if (n < 0) error("ERROR writing to socket");
 }
 
 void fSend (int sock)
 {
    char fName[256];
-   char fBuff[256];
    char rBuff[256];
    FILE *fPoint;
    long int fSize = 0;
@@ -160,7 +144,7 @@ void list(int sock){
 	   strcat(files,dir->d_name);
 	   strcat(files,"\n");
        }
-       close(d);
+       closedir(d);
    }
    
    n = write(sock,files,strlen(files));

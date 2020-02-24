@@ -56,7 +56,7 @@ int main(int argc, char *argv[])
      while (run) {
 	if(!clientcon){
          	newsockfd = accept(sockfd, 
-               	(struct sockaddr *) &cli_addr, &clilen);
+               	(struct sockaddr *) &cli_addr, (int*) &clilen);
          	if (newsockfd < 0) 
              	error("ERROR on accept");
 		else clientcon=1;
@@ -95,6 +95,10 @@ void dostuff (int sock)
    n = read(sock,buffer,255);
    if (n < 0) error("ERROR reading from socket");
 
+   if(strlen(buffer)<1){
+	close(sock);
+	exit(0);
+   }
    printf("BUFFER:%s.\n",buffer);
    if(strcmp(buffer,"LIST")==0)
 	list(sock);

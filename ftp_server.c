@@ -21,10 +21,11 @@ void fSend(int);
 void error(char *msg)
 {
     perror(msg);
-    exit(1);
+    //exit(1);
 }
 
-int run=1;
+int run;
+int clientcon;
 
 int main(int argc, char *argv[])
 {
@@ -49,25 +50,32 @@ int main(int argc, char *argv[])
      listen(sockfd,5);
      clilen = sizeof(cli_addr);
  
+     run =1;
+     clientcon=0;
      while (run) {
-         newsockfd = accept(sockfd, 
-               (struct sockaddr *) &cli_addr, &clilen);
-         if (newsockfd < 0) 
-             error("ERROR on accept");
+	if(!clientcon){
+         	newsockfd = accept(sockfd, 
+               	(struct sockaddr *) &cli_addr, &clilen);
+         	if (newsockfd < 0) 
+             	error("ERROR on accept");
+		else clientcon=1;
+	}
+
          pid = fork();
          if (pid < 0)
-             error("ERROR on fork");
+            error("ERROR on fork");
          if (pid == 0)  {
-             //close(sockfd);
+             close(sockfd);
              dostuff(newsockfd);
-             exit(0);
+             exit(1);
          }
          else{
-		wait (&status);
+	 	wait (&status);
+		clientcon = status;
 		//close(newsockfd);
 	 	//run=0;
-		printf("IN ELSE\n");
 	 }
+	
      } /* end of while */
      return 0; /* we never get here */
 }
@@ -94,8 +102,12 @@ void dostuff (int sock)
         fSend(sock);
    }
 
-   if(strcmp(buffer,"QUIT")==0)
-	run = 0;
+   if(strcmp(buffer,"QUIT")==0){
+	close(sock);
+	//run = 0;
+	clientcon=0;
+	exit(0);
+   }
 
    //printf("Here is the message: %s\n",buffer);
    //n = write(sock,"I got your message",18);

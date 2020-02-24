@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 	}
 	else if(strcmp(args[0],"STORE")==0 && datacount== 2){
 		printf("Send file to server to store.\n");
-fPoint = fopen(args[1],"rb");//open text file
+		fPoint = fopen(args[1],"rb");//open text file
 		if (fPoint == NULL)
 		{
 			printf("Error opening file.\n");

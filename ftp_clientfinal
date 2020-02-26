@@ -152,30 +152,22 @@ int main(int argc, char *argv[])
             fclose(fPoint);//close file
 		}
 	}
-	else if(strcmp(args[0],"QUIT")==0 && datacount== 1){
-		printf("Close Socket Connection.\n");
-		n = write(sockfd,"QUIT",strlen("QUIT"));
-    		if (n < 0) 
-         		perror("ERROR writing to socket");
-		//run=0;
-		inconnection=0;
-		close(sockfd);
+	else if(strcmp(args[0],"QUIT")==0 && datacount== 1)
+	{
+	    printf("Close Socket Connection.\n");
+	    n = write(sockfd,"QUIT",strlen("QUIT"));
+    	    if (n < 0) 
+	    {
+                perror("ERROR writing to socket");
+	    }
+	    inconnection=0;
+	    close(sockfd);
 	}
-	else printf("Incorrect input\n");
-
-
-	//bzero(buffer,256);
-	//fgets(buffer,255,stdin);
-	//n = write(sockfd,buffer,strlen(buffer));
-	//if (n < 0) 
-	//  perror("ERROR writing to socket");
-	//bzero(buffer,256);
-	//n = read(sockfd,buffer,255);
-	//if (n < 0) 
-	//  perror("ERROR reading from socket");
-	//printf("%s\n",buffer);
+	else 
+	{
+	    printf("Incorrect input\n");
+	}
       }
-      //close(sockfd);
     }
     
     return 0;
@@ -199,21 +191,17 @@ void fStore (int sock, char* fName)
 	{
 	    bzero(rBuff,256);
 	    read(sock, rBuff, 255);//read file length
-	    //printf("RCV 2\n");
 	    write(sock, "File length received",20);//file length ack
         fSize = atol(rBuff);
         //write through file until length of file completed.
-		//printf("Write");
 		while(count<fSize)
 		{
 		    bzero(rBuff,256);
 		    read(sock,rBuff,255);
 		    count+=strlen(rBuff);
 			fprintf(fPoint, "%s", rBuff);
-			//printf("Test\n");
 		}
 		printf("File received.\n");
-		//printf("%d\n",count);
 	}
 	fclose (fPoint);//close file
 }

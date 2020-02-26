@@ -1,3 +1,8 @@
+//By Robert Gardner, Reuben Nyenhuis, Matt Hendrick, and John Taube
+//2/25/2020
+//The purpose of this code is act as the server end for an FTP application, by opening a socket,
+//reading commands from the client, and acting upon the commands
+
 /* A simple server in the internet domain using TCP
    The port number is passed as an argument 
    This version runs forever, forking off a separate 
@@ -21,7 +26,7 @@
 void dostuff(int); 
 void list(int);
 void fSend(int);
-void fStore(int);
+void fStore(int); //function will store a file in the directory of the server, pass socket number
 void error(char *msg)
 {
     perror(msg);
@@ -36,42 +41,56 @@ int main(int argc, char *argv[])
      struct sockaddr_in serv_addr, cli_addr;
 
      sockfd = socket(AF_INET, SOCK_STREAM, 0);
+     //Throws error if not a valid socket
      if (sockfd < 0) 
+     {
         error("ERROR opening socket");
+     }
      bzero((char *) &serv_addr, sizeof(serv_addr));
      serv_addr.sin_family = AF_INET;
      serv_addr.sin_addr.s_addr = INADDR_ANY; //inet_addr("192.168.110.7");
-     serv_addr.sin_port = htons(6550);
+     serv_addr.sin_port = htons(6550); //Our port number
      if (bind(sockfd, (struct sockaddr *) &serv_addr,
-              sizeof(serv_addr)) < 0) 
-              error("ERROR on binding");
+              sizeof(serv_addr)) < 0)
+     {
+          error("ERROR on binding");
+     }
      listen(sockfd,5);
      clilen = sizeof(cli_addr);
  
      run =1;
      clientcon=0;
-     while (run) {
-	if(!clientcon){
-         	newsockfd = accept(sockfd, 
-               	(struct sockaddr *) &cli_addr, (int*) &clilen);
+     while (run) 
+     {
+	if(!clientcon)
+	{
+             newsockfd = accept(sockfd, 
+             (struct sockaddr *) &cli_addr, (int*) &clilen);
          	if (newsockfd < 0) 
-             	error("ERROR on accept");
-		else clientcon=1;
+		{
+             	    error("ERROR on accept"); //Not connected
+		}
+		else 
+		{
+		    clientcon=1; //Connected
+		}
 	}
 
          pid = fork();
-         if (pid < 0)
+         if (pid < 0) 
+	 {
             error("ERROR on fork");
-         if (pid == 0)  {
+	 }
+         if (pid == 0)  
+	 {
              close(sockfd);
              dostuff(newsockfd);
              exit(1);
          }
-         else{
-	 	wait (&status);
-		clientcon = status;
-		//close(newsockfd);
-	 	//run=0;
+         else
+	 {
+	     wait (&status);
+	     clientcon = status;
 	 }
 	
      } /* end of while */
@@ -92,32 +111,34 @@ void dostuff (int sock)
    n = read(sock,buffer,255);
    if (n < 0) error("ERROR reading from socket");
 
-   if(strlen(buffer)<1){
+   if(strlen(buffer)<1)
+   {
 	close(sock);
 	exit(0);
    }
    printf("BUFFER:%s.\n",buffer);
+   //Call the list function if LIST is selected
    if(strcmp(buffer,"LIST")==0)
+   {
 	list(sock);
-    if (strcmp(buffer,"RETR")==0) {
+   }
+   //Call the retrieve function if retrieve is selected
+   if (strcmp(buffer,"RETR")==0) 
+   {
         write(sock, "RETR received",13);
         fSend(sock);
    }
+   //store command:receive a file from client and store in server directory
    if (strcmp(buffer,"STORE")==0) {
-        write(sock, "STORE received",14);
-        fStore(sock);
+        write(sock, "STORE received",14); //ack command(fixes consecutive write short message merge)
+        fStore(sock); //run function to store file, pass socket number
    }
-
+   //Disconnect from the server if QUIT is selected
    if(strcmp(buffer,"QUIT")==0){
 	close(sock);
-	//run = 0;
 	clientcon=0;
 	exit(0);
    }
-
-   //printf("Here is the message: %s\n",buffer);
-   //n = write(sock,"I got your message",18);
-   //if (n < 0) error("ERROR writing to socket");
 }
 
 void list(int sock){
@@ -126,16 +147,21 @@ void list(int sock){
    DIR *d;
    struct dirent *dir;
    d = opendir(".");
-   if(d){
-	while((dir = readdir(d)) != NULL){
-		strcat(files,dir->d_name);
-		strcat(files,"\n");
+   if(d)
+   {
+	while((dir = readdir(d)) != NULL)
+	{
+	    strcat(files,dir->d_name);
+	    strcat(files,"\n");
 	}
 	closedir(d);
    }
    
    n = write(sock,files,strlen(files));
-   if (n < 0) error("ERROR writing to socket");
+   if (n < 0) 
+   {
+       error("ERROR writing to socket");
+   }
 }
 
 void fSend (int sock)
@@ -159,12 +185,10 @@ void fSend (int sock)
                fseek(fPoint,0, SEEK_END);
                fSize = ftell(fPoint);//get curent file pointer
                fseek(fPoint, 0, SEEK_SET);
-               //printf("%d\n",fSize);
                sprintf(cBuff,"%ld",fSize);
                write(sock, cBuff, strlen(cBuff));//send size of file
                bzero(cBuff,256);
                read(sock,cBuff,255);//get ack
-               //printf("RCV 3\n");
                while(fgets(cBuff,255,fPoint) != NULL)
                {
                    write(sock, cBuff, strlen(cBuff));//send file data
@@ -175,43 +199,40 @@ void fSend (int sock)
 	}
 }
 
+//store file from client
 void fStore (int sock)
 {
-	char fName[256];//file name
+	char fName[256];//file name buffer
 	char rBuff[256];//receive buffer
 	FILE *fPoint;//file pointer
 	long int fSize = 0; //size of file
 	long int count = 0;//count bytes of file delivered
 
-	bzero(fName,256);
+	bzero(fName,256);//clear file name buffer
 	read(sock, fName, 255);//read file name
-	//printf("RCV 1\n");
-	fPoint = fopen(fName, "wb");//open file with name
-	if (fPoint == NULL)
+	fPoint = fopen(fName, "wb");//open file with name in write binary mode
+	if (fPoint == NULL) //if file open error
 	{
-		printf("Error opening file.\n");
+		printf("Error opening file.\n"); //notify user of file open error
 		write(sock, "Server file error",17);//file open error
 	}
 	else
 	{
-        write(sock, "Name received",13);//file name read/open ack
-	    bzero(rBuff,256);
-	    read(sock, rBuff, 255);//read file length
-	    //printf("RCV 2\n");
-	    write(sock, "File length received",20);//file length ack
-        fSize = atol(rBuff);
-        //write through file until length of file completed.
-		//printf("Write");
+      		write(sock, "Name received",13);//file name read/open ack
+	    	bzero(rBuff,256);//clear receive buffer
+	    	read(sock, rBuff, 255);//read file length
+	    	write(sock, "File length received",20);//file length ack(fixes consecutive write short message merge)
+        	fSize = atol(rBuff);//convert file size from buffer into number
+        	//write through file until length of file completed.
 		while(count<fSize)
 		{
-		    bzero(rBuff,256);
-		    read(sock,rBuff,255);
-		    count+=strlen(rBuff);
-			fprintf(fPoint, "%s", rBuff);
-			//printf("Test\n");
+		    bzero(rBuff,256);//clear receive buffer
+		    read(sock,rBuff,255);//read data
+		    count+=strlen(rBuff);//count data length
+			fprintf(fPoint, "%s", rBuff);//put data in new file
 		}
-		printf("File received.\n");
-		//printf("%d\n",count);
+		printf("File received.\n");//notify user of completion
+		fclose (fPoint);//close file
 	}
-	fclose (fPoint);//close file
+	
 }

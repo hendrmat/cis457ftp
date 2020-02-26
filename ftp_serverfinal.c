@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
      if (bind(sockfd, (struct sockaddr *) &serv_addr,
               sizeof(serv_addr)) < 0)
      {
-          error("ERROR on binding");
+        error("ERROR on binding");
      }
      listen(sockfd,5);
      clilen = sizeof(cli_addr);
@@ -62,36 +62,36 @@ int main(int argc, char *argv[])
      clientcon=0;
      while (run) 
      {
-	   if(!clientcon)
-	   {
-         newsockfd = accept(sockfd, 
-         (struct sockaddr *) &cli_addr, (int*) &clilen);
-         if (newsockfd < 0) 
-		{
-             	    error("ERROR on accept"); //Not connected
-		}
-		else 
-		{
-		    clientcon=1; //Connected
-		}
+        if(!clientcon)
+	{
+          newsockfd = accept(sockfd, 
+          (struct sockaddr *) &cli_addr, (int*) &clilen);
+          if (newsockfd < 0) 
+	    {
+              error("ERROR on accept"); //Not connected
+	    }
+	  else 
+	    {
+              clientcon=1; //we are now connected
+	    }
 	}
 
-         pid = fork();
-         if (pid < 0) 
-	 {
-            error("ERROR on fork");
-	 }
-         if (pid == 0)  
-	 {
-             close(sockfd);
-             dostuff(newsockfd);
-             exit(1);
-         }
-         else
-	 {
-	     wait (&status);
-	     clientcon = status;
-	 }
+        pid = fork();
+        if (pid < 0) 
+	{
+           error("ERROR on fork");
+	}
+        if (pid == 0)  
+	{
+           close(sockfd);
+           dostuff(newsockfd);
+           exit(1);
+        }
+        else
+	{
+	   wait (&status);
+	   clientcon = status;
+	}
 	
      } /* end of while */
      return 0; /* we never get here */
@@ -164,75 +164,75 @@ void list(int sock){
    }
 }
 
+//Send file to server
 void fSend (int sock)
 {
-	char cBuff[256];//communication buffer
-	FILE *fPoint; //file pointer
-	char fName[256];//file name
-	unsigned long fSize=0;//file size
+  char cBuff[256];//communication buffer
+  FILE *fPoint; //file pointer
+  char fName[256];//file name
+  unsigned long fSize=0;//file size
 
-	bzero(fName,256);
-	read(sock, fName, 255);//read file name
-
-	fPoint = fopen(fName,"rb");//open text file
-	if (fPoint == NULL)
-	{
-		printf("Error opening file.\n");
-	}
-	else
-	{
-		//send size of file
-               fseek(fPoint,0, SEEK_END);
-               fSize = ftell(fPoint);//get curent file pointer
-               fseek(fPoint, 0, SEEK_SET);
-               sprintf(cBuff,"%ld",fSize);
-               write(sock, cBuff, strlen(cBuff));//send size of file
-               bzero(cBuff,256);
-               read(sock,cBuff,255);//get ack
-               while(fgets(cBuff,255,fPoint) != NULL)
-               {
-                   write(sock, cBuff, strlen(cBuff));//send file data
-               }
-               printf("File Sent.\n");
-
-           fclose(fPoint);//close file
-	}
+  bzero(fName,256);
+  read(sock, fName, 255);//read file name
+  fPoint = fopen(fName,"rb");//open text file
+  
+  if (fPoint == NULL)
+  {
+    printf("Error opening file.\n");
+  }
+  else
+  {
+    //send size of file
+    fseek(fPoint,0, SEEK_END);
+    fSize = ftell(fPoint);//get curent file pointer
+    fseek(fPoint, 0, SEEK_SET);
+    sprintf(cBuff,"%ld",fSize);
+    write(sock, cBuff, strlen(cBuff));//send size of file
+    bzero(cBuff,256);
+    read(sock,cBuff,255);//get ack
+    while(fgets(cBuff,255,fPoint) != NULL)
+    {
+      write(sock, cBuff, strlen(cBuff));//send file data
+    }
+    printf("File Sent.\n");
+    fclose(fPoint);//close file
+  }
 }
 
 //store file from client
 void fStore (int sock)
 {
-	char fName[256];//file name buffer
-	char rBuff[256];//receive buffer
-	FILE *fPoint;//file pointer
-	long int fSize = 0; //size of file
-	long int count = 0;//count bytes of file delivered
-
-	bzero(fName,256);//clear file name buffer
-	read(sock, fName, 255);//read file name
-	fPoint = fopen(fName, "wb");//open file with name in write binary mode
-	if (fPoint == NULL) //if file open error
-	{
-		printf("Error opening file.\n"); //notify user of file open error
-		write(sock, "Server file error",17);//file open error
-	}
-	else
-	{
-      		write(sock, "Name received",13);//file name read/open ack
-	    	bzero(rBuff,256);//clear receive buffer
-	    	read(sock, rBuff, 255);//read file length
-	    	write(sock, "File length received",20);//file length ack(fixes consecutive write short message merge)
-        	fSize = atol(rBuff);//convert file size from buffer into number
-        	//write through file until length of file completed.
-		while(count<fSize)
-		{
-		    bzero(rBuff,256);//clear receive buffer
-		    read(sock,rBuff,255);//read data
-		    count+=strlen(rBuff);//count data length
-			fprintf(fPoint, "%s", rBuff);//put data in new file
-		}
-		printf("File received.\n");//notify user of completion
-		fclose (fPoint);//close file
-	}
+  char fName[256];//file name buffer
+  char rBuff[256];//receive buffer
+  FILE *fPoint;//file pointer
+  long int fSize = 0; //size of file
+  long int count = 0;//count bytes of file delivered
+  bzero(fName,256);//clear file name buffer
+  read(sock, fName, 255);//read file name
+  fPoint = fopen(fName, "wb");//open file with name in write binary mode
+  if (fPoint == NULL) //if file open error
+  {
+    printf("Error opening file.\n"); //notify user of file open error
+    write(sock, "Server file error",17);//file open error
+  }
+  else
+  {
+    write(sock, "Name received",13);//file name read/open ack
+    bzero(rBuff,256);//clear receive buffer
+    read(sock, rBuff, 255);//read file length
+    //file length ack(fixes consecutive write short message merge)
+    write(sock, "File length received",20);
+    fSize = atol(rBuff);//convert file size from buffer into number
+    //write through file until length of file completed.
+    while(count<fSize)
+    {
+      bzero(rBuff,256);//clear receive buffer
+      read(sock,rBuff,255);//read data
+      count+=strlen(rBuff);//count data length
+      fprintf(fPoint, "%s", rBuff);//put data in new file
+    }
+    printf("File received.\n");//notify user of completion
+    fclose (fPoint);//close file
+  }
 	
 }

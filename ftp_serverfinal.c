@@ -37,7 +37,7 @@ int clientcon;
 
 int main(int argc, char *argv[])
 {
-     int sockfd, newsockfd, portno, clilen, pid,status;
+     int sockfd, newsockfd, clilen, pid,status;
      struct sockaddr_in serv_addr, cli_addr;
 
      sockfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
         if(!clientcon)
 	{
           newsockfd = accept(sockfd, 
-          (struct sockaddr *) &cli_addr, (int*) &clilen);
+          (struct sockaddr *) &cli_addr, (int *) &clilen);
           if (newsockfd < 0) 
 	    {
               error("ERROR on accept"); //Not connected

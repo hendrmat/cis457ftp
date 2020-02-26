@@ -16,6 +16,7 @@ void fStore(int,char *);
 char args[3][50];
 int datacount=0;
 
+//Function used to parse user input
 void parse(char* str)
 {
   int j=0;
@@ -70,8 +71,8 @@ int main(int argc, char *argv[])
        sockfd = socket(AF_INET, SOCK_STREAM, 0);
        if (sockfd < 0) 
 	 perror("ERROR opening socket");
-	 server = gethostbyname(args[1]);
-	 if (server == NULL) 
+	server = gethostbyname(args[1]);
+	if (server == NULL) 
 	   fprintf(stderr,"ERROR, no such host\n");
 	 
 	 bzero((char *) &serv_addr, sizeof(serv_addr));
@@ -178,8 +179,8 @@ int main(int argc, char *argv[])
 	  n = write(sockfd,"QUIT",strlen("QUIT"));
     	  if (n < 0) 
             perror("ERROR writing to socket");
-	    inconnection=0; //Set to disconnected
-	    close(sockfd); //Close connection
+	   inconnection=0; //Set to disconnected
+	   close(sockfd); //Close connection
 	}
 	else printf("Incorrect input\n");
       }
